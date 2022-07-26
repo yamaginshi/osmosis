@@ -11,7 +11,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math/rand"
 
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -23,9 +22,9 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
+	"github.com/osmosis-labs/osmosis/v10/simulation/simtypes"
 	"github.com/osmosis-labs/osmosis/v10/x/mint/client/rest"
 	"github.com/osmosis-labs/osmosis/v10/x/superfluid/client/cli"
 	"github.com/osmosis-labs/osmosis/v10/x/superfluid/keeper"
@@ -197,38 +196,48 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 	return []abci.ValidatorUpdate{}
 }
 
+func (am AppModule) ConsensusVersion() uint64 {
+	return 1
+}
+
 // ___________________________________________________________________________
+
+// // GenerateGenesisState creates a randomized GenState of the pool-incentives module.
+// func (AppModule) GenerateGenesisState(simState *module.SimulationState) {
+// 	simulation.RandomizedGenState(simState)
+// }
+
+// // ProposalContents doesn't return any content functions for governance proposals.
+// func (am AppModule) ProposalContents(simState module.SimulationState) []sdksimtypes.WeightedProposalContent {
+// 	return simulation.ProposalContents(am.keeper, am.gammKeeper)
+// }
+
+// // RandomizedParams creates randomized pool-incentives param changes for the simulator.
+// func (AppModule) RandomizedParams(r *rand.Rand) []sdksimtypes.ParamChange {
+// 	return nil // TODO
+// }
+
+// // RegisterStoreDecoder registers a decoder for supply module's types.
+// func (am AppModule) RegisterStoreDecoder(sdr sdk.StoreDecoderRegistry) {
+// 	// TODO
+// }
+
+// WeightedOperations returns the all the module operations with their respective weights.
+// func (am AppModule) WeightedOperations(simState module.SimulationState) []sdksimtypes.WeightedOperation {
+// 	return simulation.WeightedOperations(
+// 		simState.AppParams, simState.Cdc,
+// 		am.accountKeeper, am.bankKeeper, am.stakingKeeper, am.lockupKeeper, am.keeper,
+// 	)
+// }
 
 // AppModuleSimulation functions
 
-// GenerateGenesisState creates a randomized GenState of the pool-incentives module.
-func (AppModule) GenerateGenesisState(simState *module.SimulationState) {
-	simulation.RandomizedGenState(simState)
-}
-
-// ProposalContents doesn't return any content functions for governance proposals.
-func (am AppModule) ProposalContents(simState module.SimulationState) []simtypes.WeightedProposalContent {
-	return simulation.ProposalContents(am.keeper, am.gammKeeper)
-}
-
-// RandomizedParams creates randomized pool-incentives param changes for the simulator.
-func (AppModule) RandomizedParams(r *rand.Rand) []simtypes.ParamChange {
-	return nil // TODO
-}
-
-// RegisterStoreDecoder registers a decoder for supply module's types.
-func (am AppModule) RegisterStoreDecoder(sdr sdk.StoreDecoderRegistry) {
-	// TODO
-}
-
-// WeightedOperations returns the all the module operations with their respective weights.
-func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
-	return simulation.WeightedOperations(
-		simState.AppParams, simState.Cdc,
-		am.accountKeeper, am.bankKeeper, am.stakingKeeper, am.lockupKeeper, am.keeper,
-	)
-}
-
-func (am AppModule) ConsensusVersion() uint64 {
-	return 1
+// WeightedOperations returns the all the lockup module operations with their respective weights.
+func (am AppModule) Actions() []simtypes.Action {
+	return []simtypes.Action{
+		simtypes.NewMsgBasedAction("superfluid delegate", am.keeper, simulation.SimulateMsgSuperfluidDelegate),
+		simtypes.NewMsgBasedAction("superfluid undelegate", am.keeper, simulation.SimulateMsgSuperfluidUndelegate),
+		simtypes.NewMsgBasedAction("superfluid prop add", am.keeper, simulation.SimulateSetSuperfluidAssetsProposal),
+		// simtypes.NewMsgBasedAction("unlock lock", am.keeper, simulation.RandomMsgBeginUnlocking),
+	}
 }

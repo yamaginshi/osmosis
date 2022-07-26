@@ -246,3 +246,19 @@ func (app *OsmosisApp) GetAccountKeeper() simtypes.AccountKeeper {
 func (app *OsmosisApp) GetBankKeeper() simtypes.BankKeeper {
 	return app.AppKeepers.BankKeeper
 }
+
+func (app *OsmosisApp) GetStakingKeeper() simtypes.StakingKeeper {
+	return app.AppKeepers.StakingKeeper
+}
+
+func (app *OsmosisApp) GetLockupKeeper() simtypes.LockupKeeper {
+	return app.AppKeepers.LockupKeeper
+}
+
+func (app *OsmosisApp) GetGAMMKeeper() simtypes.GAMMKeeper {
+	return app.AppKeepers.GAMMKeeper
+}
+
+func (app *OsmosisApp) GetGovKeeper() simtypes.GovKeeper {
+	return app.AppKeepers.GovKeeper
+}

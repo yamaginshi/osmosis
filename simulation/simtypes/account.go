@@ -7,6 +7,9 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/simulation"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+
+	lockuptypes "github.com/osmosis-labs/osmosis/v10/x/lockup/types"
 )
 
 func (sim *SimCtx) RandomSimAccount() simulation.Account {
@@ -37,6 +40,35 @@ func (sim *SimCtx) RandomSimAccountWithConstraint(f SimAccountConstraint) (simul
 		return simulation.Account{}, false
 	}
 	return sim.randomSimAccount(filteredAddrs), true
+}
+
+func (sim *SimCtx) RandomValidator(ctx sdk.Context) (stakingtypes.Validator, error) {
+	r := sim.GetSeededRand("select random seed")
+	validators := sim.StakingKeeper().GetAllValidators(ctx)
+	if len(validators) == 0 {
+		return stakingtypes.Validator{}, errors.New("no validators exist.")
+	}
+	return validators[r.Intn(len(validators))], nil
+}
+
+func (sim *SimCtx) RandomLockAndAccount(ctx sdk.Context) (lockuptypes.PeriodLock, simulation.Account, error) {
+	accHasLock := func(acc simulation.Account) bool {
+		locks := sim.LockupKeeper().GetAccountPeriodLocks(ctx, acc.Address)
+		return len(locks) > 0
+	}
+	r := sim.GetSeededRand("select random seed")
+	acc, found := sim.RandomSimAccountWithConstraint(accHasLock)
+	if !found {
+		return lockuptypes.PeriodLock{}, simulation.Account{}, errors.New("no address with locks found.")
+	}
+	locks := sim.LockupKeeper().GetAccountPeriodLocks(ctx, acc.Address)
+	if len(locks) == 0 {
+		return lockuptypes.PeriodLock{}, simulation.Account{}, errors.New("address has no locks.")
+	}
+
+	lock := locks[r.Intn(len(locks))]
+
+	return lock, acc, nil
 }
 
 func (sim *SimCtx) RandomSimAccountWithMinCoins(ctx sdk.Context, coins sdk.Coins) (simulation.Account, error) {
