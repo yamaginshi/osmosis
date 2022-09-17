@@ -291,33 +291,45 @@ func solveCfmmDirect(xReserve, yReserve, yIn sdk.Dec) sdk.Dec {
 		panic("invalid input: reserves and input must be positive")
 	}
 
-	// find k using existing reserves
-	k := cfmmConstant(xReserve, yReserve)
+	// find k / y0 using existing reserves
+	kDivY0 := xReserve.Mul((xReserve.Mul(xReserve)).Add(yReserve.Mul(yReserve)))
 
 	// find new yReserve after join
 	y_new := yReserve.Add(yIn)
 
 	// store powers to simplify calculations
-	y2 := y_new.Mul(y_new)
-	y3 := y2.Mul(y_new)
-	y4 := y3.Mul(y_new)
-	large_term := (y4.Quo(k)).Mul(sdk.NewDec(2).Quo(twentySevenRootTwo))
-	large_term2 := large_term.Mul(large_term)
+	yDivY0 := y_new.Quo(yReserve)
+	y3 := y_new.Mul(y_new).Mul(y_new)
 
 	// solve for new xReserve using new yReserve and old k using a solver derived from xy(x^2 + y^2) = k
-	sqrt_term, err := (sdk.OneDec().Add(large_term2)).ApproxRoot(2)
+
+	scaling_term, err := (kDivY0.Quo(yDivY0.MulInt64(2))).ApproxRoot(3)
 	if err != nil {
 		panic(err)
 	}
 
-	common_factor, err := (y2.MulInt64(9).Mul(k).Mul((sqrt_term.Add(sdk.OneDec())))).ApproxRoot(3)
+	// we calculate the (2 * y^3) / (sqrt(27) * k_div_y0) term separately to maintain O(y^3) for largest term
+	y3DivKy := (y3.MulInt64(2)).Quo(kDivY0.Mul(twentySevenRootTwo))
+
+	common_inner := yDivY0.Mul(y3DivKy)
+	common_inner2 := common_inner.Mul(common_inner)
+	sqrt_inner := common_inner2.Add(sdk.OneDec())
+	sqrt_term, err := sqrt_inner.ApproxRoot(2)
 	if err != nil {
 		panic(err)
 	}
 
-	term1 := cubeRootTwo.Mul(common_factor).Quo(y_new)
-	term2 := twoCubeRootThree.Mul(y3).Quo(common_factor)
-	x_new := (term1.Sub(term2)).Quo(cubeRootSixSquared)
+	term1, err := (sdk.OneDec().Add(sqrt_term)).ApproxRoot(3)
+	if err != nil {
+		panic(err)
+	}
+
+	term2, err := (sdk.OneDec().Sub(sqrt_term)).ApproxRoot(3)
+	if err != nil {
+		panic(err)
+	}
+
+	x_new := scaling_term.Mul(term1.Add(term2))
 
 	// find amount of x to output using initial and final xReserve values
 	xOut := xReserve.Sub(x_new)

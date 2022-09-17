@@ -39,7 +39,8 @@ func TestCFMMInvariantTwoAssets(t *testing.T) {
 		// {
 		// 	sdk.NewDec(100000),
 		// 	sdk.NewDec(100000),
-		// 	sdk.NewDec(10000),
+		// 	sdk.NewDec(100),
+		// 	false,
 		// },
 
 		// panic catching
@@ -68,7 +69,7 @@ func TestCFMMInvariantTwoAssets(t *testing.T) {
 		sut := func() {
 			// using two-asset cfmm
 			k0 := cfmmConstant(test.xReserve, test.yReserve)
-			xOut := solveCfmm(test.xReserve, test.yReserve, test.yIn)
+			xOut := solveCfmmDirect(test.xReserve, test.yReserve, test.yIn)
 
 			k1 := cfmmConstant(test.xReserve.Sub(xOut), test.yReserve.Add(test.yIn))
 			osmoassert.DecApproxEq(t, k0, k1, kErrTolerance)
