@@ -86,10 +86,14 @@ func (k Keeper) SetGaugeWithRefKey(ctx sdk.Context, gauge *types.Gauge) error {
 	curTime := ctx.BlockTime()
 	timeKey := getTimeKey(gauge.StartTime)
 	activeOrUpcomingGauge := gauge.IsActiveGauge(curTime) || gauge.IsUpcomingGauge(curTime)
-	fmt.Printf("gauge.IsUpcomingGauge(curTime) %v gauge %v\n", gauge.IsUpcomingGauge(curTime), gauge.Id)
-	fmt.Printf("combineKeys(types.KeyPrefixUpcomingGauges, timeKey) %v \n", combineKeys(timeKey, types.KeyPrefixUpcomingGauges))
-	fmt.Printf("gauge.IsActiveGauge(curTime) %v gauge %v \n", gauge.IsActiveGauge(curTime), gauge.Id)
-	fmt.Printf("combineKeys(types.KeyPrefixActiveGauges, timeKey) %v \n", combineKeys(timeKey, types.KeyPrefixActiveGauges))
+
+	if gauge.Id == 1894 {
+		fmt.Printf("AAAAAAAAAAAAAAAA")
+		fmt.Printf("gauge.IsUpcomingGauge(curTime) %v gauge %v\n", gauge.IsUpcomingGauge(curTime), gauge.Id)
+		fmt.Printf("combineKeys(types.KeyPrefixUpcomingGauges, timeKey) %v \n", combineKeys(timeKey, types.KeyPrefixUpcomingGauges))
+		fmt.Printf("gauge.IsActiveGauge(curTime) %v gauge %v \n", gauge.IsActiveGauge(curTime), gauge.Id)
+		fmt.Printf("combineKeys(types.KeyPrefixActiveGauges, timeKey) %v \n", combineKeys(timeKey, types.KeyPrefixActiveGauges))
+	}
 
 	if gauge.IsUpcomingGauge(curTime) {
 		combinedKeys := combineKeys(types.KeyPrefixUpcomingGauges, timeKey)
