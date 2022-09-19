@@ -409,26 +409,6 @@ func (suite *KeeperTestSuite) TestChargeFeeIfSufficientFeeDenomBalance() {
 }
 
 func (suite *KeeperTestSuite) TestSetGaugeWithRefKey() {
-	//ctx sdk.Context, gauge *types.Gauge
-	// err := k.setGauge(ctx, gauge)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// curTime := ctx.BlockTime()
-	// timeKey := getTimeKey(gauge.StartTime)
-	// activeOrUpcomingGauge := gauge.IsActiveGauge(curTime) || gauge.IsUpcomingGauge(curTime)
-
-	// if gauge.IsUpcomingGauge(curTime) {
-	// 	combinedKeys := combineKeys(types.KeyPrefixUpcomingGauges, timeKey)
-	// 	return k.CreateGaugeRefKeys(ctx, gauge, combinedKeys, activeOrUpcomingGauge)
-	// } else if gauge.IsActiveGauge(curTime) {
-	// 	combinedKeys := combineKeys(types.KeyPrefixActiveGauges, timeKey)
-	// 	return k.CreateGaugeRefKeys(ctx, gauge, combinedKeys, activeOrUpcomingGauge)
-	// } else {
-	// 	combinedKeys := combineKeys(types.KeyPrefixFinishedGauges, timeKey)
-	// 	return k.CreateGaugeRefKeys(ctx, gauge, combinedKeys, activeOrUpcomingGauge)
-	// }
 	testCases := []struct {
 		isPerpetual bool
 		numLocks    int
@@ -491,7 +471,7 @@ func (suite *KeeperTestSuite) TestSetGaugeWithRefKey() {
 			StartTime:         startTime,
 		}
 		suite.Require().Equal(expectedGauge.String(), gauges[0].String())
-		suite.App.IncentivesKeeper.SetGaugeWithRefKey(suite.Ctx, &gauges[0])
+		//suite.App.IncentivesKeeper.SetGaugeWithRefKey(suite.Ctx, &gauges[0])
 		timeKey := suite.App.IncentivesKeeper.GetTimeKey(gauges[0].StartTime)
 		combinedKeys := suite.App.IncentivesKeeper.CombineKeys(types.KeyPrefixActiveGauges, timeKey)
 		test := suite.App.IncentivesKeeper.GetGaugeRefs(suite.Ctx, combinedKeys)
@@ -500,7 +480,24 @@ func (suite *KeeperTestSuite) TestSetGaugeWithRefKey() {
 		combinedKeys2 := suite.App.IncentivesKeeper.CombineKeys(types.KeyPrefixUpcomingGauges, timeKey2)
 		test2 := suite.App.IncentivesKeeper.GetGaugeRefs(suite.Ctx, combinedKeys2)
 		fmt.Printf("UPCOMING %v \n", test2)
-		er := fmt.Errorf("UPCOMING %v \n", test)
+
+		suite.Ctx = suite.Ctx.WithBlockTime(time.Now().Add(time.Hour * 48))
+		suite.App.IncentivesKeeper.Distribute(suite.Ctx, gauges)
+		suite.Ctx = suite.Ctx.WithBlockTime(time.Now().Add(time.Hour * 48))
+		suite.App.IncentivesKeeper.Distribute(suite.Ctx, gauges)
+
+		// beginBlockRequest := abci.RequestBeginBlock{}
+		// suite.App.BeginBlocker(suite.Ctx, beginBlockRequest)
+		timeKey = suite.App.IncentivesKeeper.GetTimeKey(gauges[0].StartTime)
+		combinedKeys = suite.App.IncentivesKeeper.CombineKeys(types.KeyPrefixActiveGauges, timeKey)
+		test = suite.App.IncentivesKeeper.GetGaugeRefs(suite.Ctx, combinedKeys)
+		fmt.Printf("ACTIVE %v \n", test)
+		timeKey2 = suite.App.IncentivesKeeper.GetTimeKey(gauges[0].StartTime)
+		combinedKeys2 = suite.App.IncentivesKeeper.CombineKeys(types.KeyPrefixUpcomingGauges, timeKey2)
+		test2 = suite.App.IncentivesKeeper.GetGaugeRefs(suite.Ctx, combinedKeys2)
+		fmt.Printf("UPCOMING %v \n", test2)
+		fmt.Printf("suite.App.IncentivesKeeper.GetNotFinishedGauges(suite.Ctx) %v \n", suite.App.IncentivesKeeper.GetNotFinishedGauges(suite.Ctx))
+		er := fmt.Errorf("ACTIVE %v \n", test)
 		suite.Require().NoError(er)
 		// look for beginblock logic
 	}
