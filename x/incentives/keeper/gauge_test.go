@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"fmt"
 	"time"
 
 	appparams "github.com/osmosis-labs/osmosis/v11/app/params"
@@ -404,5 +405,103 @@ func (suite *KeeperTestSuite) TestChargeFeeIfSufficientFeeDenomBalance() {
 				suite.Require().Equal(expectedNewBalanceAmount.String(), newBalanceAmount.String())
 			}
 		})
+	}
+}
+
+func (suite *KeeperTestSuite) TestSetGaugeWithRefKey() {
+	//ctx sdk.Context, gauge *types.Gauge
+	// err := k.setGauge(ctx, gauge)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// curTime := ctx.BlockTime()
+	// timeKey := getTimeKey(gauge.StartTime)
+	// activeOrUpcomingGauge := gauge.IsActiveGauge(curTime) || gauge.IsUpcomingGauge(curTime)
+
+	// if gauge.IsUpcomingGauge(curTime) {
+	// 	combinedKeys := combineKeys(types.KeyPrefixUpcomingGauges, timeKey)
+	// 	return k.CreateGaugeRefKeys(ctx, gauge, combinedKeys, activeOrUpcomingGauge)
+	// } else if gauge.IsActiveGauge(curTime) {
+	// 	combinedKeys := combineKeys(types.KeyPrefixActiveGauges, timeKey)
+	// 	return k.CreateGaugeRefKeys(ctx, gauge, combinedKeys, activeOrUpcomingGauge)
+	// } else {
+	// 	combinedKeys := combineKeys(types.KeyPrefixFinishedGauges, timeKey)
+	// 	return k.CreateGaugeRefKeys(ctx, gauge, combinedKeys, activeOrUpcomingGauge)
+	// }
+	testCases := []struct {
+		isPerpetual bool
+		numLocks    int
+	}{
+		{
+			isPerpetual: true,
+			numLocks:    1,
+		},
+		{
+			isPerpetual: false,
+			numLocks:    1,
+		},
+		{
+			isPerpetual: true,
+			numLocks:    2,
+		},
+		{
+			isPerpetual: false,
+			numLocks:    2,
+		},
+	}
+	for _, tc := range testCases {
+		// test for module get gauges
+		suite.SetupTest()
+
+		// initial module gauges check
+		gauges := suite.App.IncentivesKeeper.GetNotFinishedGauges(suite.Ctx)
+		suite.Require().Len(gauges, 0)
+		gaugeIdsByDenom := suite.App.IncentivesKeeper.GetAllGaugeIDsByDenom(suite.Ctx, "lptoken")
+		suite.Require().Len(gaugeIdsByDenom, 0)
+
+		// setup lock and gauge
+		//lockOwners := suite.SetupManyLocks(tc.numLocks, defaultLiquidTokens, defaultLPTokens, time.Second)
+		gaugeID, _, coins, startTime := suite.SetupNewGauge(tc.isPerpetual, sdk.Coins{sdk.NewInt64Coin("stake", 12)})
+		// evenly distributed per lock
+		//expectedCoinsPerLock := sdk.Coins{sdk.NewInt64Coin("stake", 12/int64(tc.numLocks))}
+		// set expected epochs
+		var expectedNumEpochsPaidOver int
+		if tc.isPerpetual {
+			expectedNumEpochsPaidOver = 1
+		} else {
+			expectedNumEpochsPaidOver = 2
+		}
+
+		// check gauges
+		gauges = suite.App.IncentivesKeeper.GetNotFinishedGauges(suite.Ctx)
+		suite.Require().Len(gauges, 1)
+		expectedGauge := types.Gauge{
+			Id:          gaugeID,
+			IsPerpetual: tc.isPerpetual,
+			DistributeTo: lockuptypes.QueryCondition{
+				LockQueryType: lockuptypes.ByDuration,
+				Denom:         "lptoken",
+				Duration:      time.Second,
+			},
+			Coins:             coins,
+			NumEpochsPaidOver: uint64(expectedNumEpochsPaidOver),
+			FilledEpochs:      0,
+			DistributedCoins:  sdk.Coins{},
+			StartTime:         startTime,
+		}
+		suite.Require().Equal(expectedGauge.String(), gauges[0].String())
+		suite.App.IncentivesKeeper.SetGaugeWithRefKey(suite.Ctx, &gauges[0])
+		timeKey := suite.App.IncentivesKeeper.GetTimeKey(gauges[0].StartTime)
+		combinedKeys := suite.App.IncentivesKeeper.CombineKeys(types.KeyPrefixActiveGauges, timeKey)
+		test := suite.App.IncentivesKeeper.GetGaugeRefs(suite.Ctx, combinedKeys)
+		fmt.Printf("ACTIVE %v \n", test)
+		timeKey2 := suite.App.IncentivesKeeper.GetTimeKey(gauges[0].StartTime)
+		combinedKeys2 := suite.App.IncentivesKeeper.CombineKeys(types.KeyPrefixUpcomingGauges, timeKey2)
+		test2 := suite.App.IncentivesKeeper.GetGaugeRefs(suite.Ctx, combinedKeys2)
+		fmt.Printf("UPCOMING %v \n", test2)
+		er := fmt.Errorf("UPCOMING %v \n", test)
+		suite.Require().NoError(er)
+		// look for beginblock logic
 	}
 }

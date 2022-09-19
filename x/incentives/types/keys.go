@@ -29,13 +29,13 @@ var (
 	KeyPrefixGauges = []byte{0x04}
 
 	// KeyPrefixUpcomingGauges defines prefix key for storing reference key for upcoming gauges.
-	KeyPrefixUpcomingGauges = []byte{0x04, 0x00}
+	KeyPrefixUpcomingGauges = append([]byte{0x04}, []byte("upcoming")...)
 
 	// KeyPrefixActiveGauges defines prefix key for storing reference key for active gauges.
-	KeyPrefixActiveGauges = []byte{0x04, 0x01}
+	KeyPrefixActiveGauges = append([]byte{0x04}, []byte("active")...)
 
 	// KeyPrefixFinishedGauges defines prefix key for storing reference key for finished gauges.
-	KeyPrefixFinishedGauges = []byte{0x04, 0x02}
+	KeyPrefixFinishedGauges = append([]byte{0x04}, []byte("finished")...)
 
 	// KeyPrefixGaugesByDenom defines prefix key for storing indexes of gauge IDs by denomination.
 	KeyPrefixGaugesByDenom = []byte{0x05}
