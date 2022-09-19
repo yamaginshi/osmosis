@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	"github.com/osmosis-labs/osmosis/v11/x/incentives/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -12,6 +14,9 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 	k.SetParams(ctx, genState.Params)
 	k.SetLockableDurations(ctx, genState.LockableDurations)
 	for _, gauge := range genState.Gauges {
+		if gauge.Id == 1894 {
+			fmt.Printf("ADAM %v \n", gauge)
+		}
 		err := k.SetGaugeWithRefKey(ctx, &gauge)
 		if err != nil {
 			panic(err)
