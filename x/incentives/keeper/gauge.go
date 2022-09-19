@@ -92,9 +92,9 @@ func (k Keeper) SetGaugeWithRefKey(ctx sdk.Context, gauge *types.Gauge) error {
 		fmt.Printf("curTime %v gauge %v\n", curTime, gauge.Id)
 		fmt.Printf("gauge.StartTime %v gauge %v\n", gauge.StartTime, gauge.Id)
 
-		fmt.Printf("gauge.IsUpcomingGauge(curTime) %v gauge %v\n", gauge.IsUpcomingGauge(curTime), gauge.Id)
+		fmt.Printf("gauge.IsUpcomingGauge(curTime) %v gauge %v\n", curTime.After(gauge.StartTime), gauge.Id)
 		fmt.Printf("combineKeys(types.KeyPrefixUpcomingGauges, timeKey) %v \n", combineKeys(timeKey, types.KeyPrefixUpcomingGauges))
-		fmt.Printf("gauge.IsActiveGauge(curTime) %v gauge %v \n", gauge.IsActiveGauge(curTime), gauge.Id)
+		fmt.Printf("gauge.IsActiveGauge(curTime) %v gauge %v \n", curTime.Before(gauge.StartTime) && (gauge.IsPerpetual || gauge.FilledEpochs < gauge.NumEpochsPaidOver), gauge.Id)
 		fmt.Printf("combineKeys(types.KeyPrefixActiveGauges, timeKey) %v \n", combineKeys(timeKey, types.KeyPrefixActiveGauges))
 	}
 
