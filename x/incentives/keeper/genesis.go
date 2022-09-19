@@ -17,6 +17,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 			panic(err)
 		}
 	}
+	k.SetLastGaugeID(ctx, genState.LastGaugeId)
 }
 
 // ExportGenesis returns the x/incentives module's exported genesis.
@@ -25,5 +26,6 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 		Params:            k.GetParams(ctx),
 		LockableDurations: k.GetLockableDurations(ctx),
 		Gauges:            k.GetNotFinishedGauges(ctx),
+		LastGaugeId:       k.GetLastGaugeID(ctx),
 	}
 }
