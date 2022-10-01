@@ -303,5 +303,5 @@ func createOsmosisAppAndExport(
 		app = osmosis.NewOsmosisApp(logger, db, traceStore, true, map[int64]bool{}, "", uint(1), appOpts, osmosis.GetWasmEnabledProposals(), osmosis.EmptyWasmOpts)
 	}
 
-	return app.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
+	return app.ExportAppStateAndValidators(forZeroHeight, jailWhiteList, modulesToExport)
 }
