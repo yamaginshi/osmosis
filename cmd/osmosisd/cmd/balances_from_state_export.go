@@ -307,8 +307,9 @@ Example:
 
 type StakedAmountToAddress struct {
 	// 1. Create a new struct for storing read JSON objects
-	Address string `json:"address"`
-	Staked  uint64 `json:"staked"`
+	Address string                 `json:"address"`
+	Staked  uint64                 `json:"staked"`
+	Other   map[string]interface{} `json:"-"`
 }
 
 // BalancesToCSVCmd generates a airdrop.csv from a provided exported balances.json.
@@ -364,7 +365,6 @@ Example:
 
 			for _, r := range airdropList {
 				var csvRow []string
-				fmt.Printf("TEST")
 				csvRow = append(csvRow, r.Address, fmt.Sprint(r.Staked))
 				if err := writer.Write(csvRow); err != nil {
 					return err
