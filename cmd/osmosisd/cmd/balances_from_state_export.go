@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -295,6 +296,78 @@ Example:
 
 			err = ioutil.WriteFile(snapshotOutput, snapshotJSON, 0o644)
 			return err
+		},
+	}
+
+	cmd.Flags().String(FlagSelectPoolIds, "",
+		"Output a special breakdown for amount LP'd to the provided pools. Usage --breakdown-by-pool-ids=1,2,605")
+
+	return cmd
+}
+
+type StakedAmountToAddress struct {
+	// 1. Create a new struct for storing read JSON objects
+	Address string `json:"address"`
+	Staked  string `json:"staked"`
+}
+
+// BalancesToCSVCmd generates a airdrop.csv from a provided exported balances.json.
+func StakedToCSVCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "staked-to-csv [input-balances-file] [output-airdrop-csv]",
+		Short: "Export a airdrop csv from a provided balances export",
+		Long: `Export a airdrop csv from a provided balances export
+Example:
+	osmosisd staked-to-csv ../balances.json ../airdrop.csv
+`,
+		Args: cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx := client.GetClientContextFromCmd(cmd)
+			serverCtx := server.GetServerContextFromCmd(cmd)
+			config := serverCtx.Config
+			config.SetRoot(clientCtx.HomeDir)
+
+			balancesFile := args[0]
+
+			snapshotOutput := args[1]
+
+			// 2. Read the JSON file into the struct array
+			sourceFile, err := os.Open(balancesFile)
+			if err != nil {
+				return err
+			}
+			// remember to close the file at the end of the function
+			defer sourceFile.Close()
+
+			var airdropList []StakedAmountToAddress
+			if err := json.NewDecoder(sourceFile).Decode(&airdropList); err != nil {
+				return err
+			}
+
+			// 3. Create a new file to store CSV data
+			outputFile, err := os.Create(snapshotOutput)
+			if err != nil {
+				return err
+			}
+			defer outputFile.Close()
+
+			// 4. Write the header of the CSV file and the successive rows by iterating through the JSON struct array
+			writer := csv.NewWriter(outputFile)
+			defer writer.Flush()
+
+			header := []string{"address", "staked"}
+			if err := writer.Write(header); err != nil {
+				return err
+			}
+
+			for _, r := range airdropList {
+				var csvRow []string
+				csvRow = append(csvRow, r.Address, r.Staked)
+				if err := writer.Write(csvRow); err != nil {
+					return err
+				}
+			}
+			return nil
 		},
 	}
 
