@@ -364,6 +364,7 @@ Example:
 
 			for _, r := range airdropList {
 				var csvRow []string
+				fmt.Printf("TEST")
 				csvRow = append(csvRow, r.Address, fmt.Sprint(r.Staked))
 				if err := writer.Write(csvRow); err != nil {
 					return err
