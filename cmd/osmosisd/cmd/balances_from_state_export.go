@@ -340,12 +340,17 @@ Example:
 			// remember to close the file at the end of the function
 			defer sourceFile.Close()
 
-			var airdropList []StakedAmountToAddress
+			// var airdropList []StakedAmountToAddress
 			jsonBlob, _ := ioutil.ReadFile(balancesFile)
 
+			var airdropList []StakedAmountToAddress
 			if err := json.Unmarshal(jsonBlob, &airdropList); err != nil {
-				return err
+				panic(err)
 			}
+
+			// if err := json.Unmarshal(jsonBlob, &airdropList); err != nil {
+			// 	return err
+			// }
 
 			// 3. Create a new file to store CSV data
 			outputFile, err := os.Create(snapshotOutput)
