@@ -340,7 +340,9 @@ Example:
 			defer sourceFile.Close()
 
 			var airdropList []StakedAmountToAddress
-			if err := json.NewDecoder(sourceFile).Decode(&airdropList); err != nil {
+			jsonBlob, _ := ioutil.ReadFile(balancesFile)
+
+			if err := json.Unmarshal(jsonBlob, &airdropList); err != nil {
 				return err
 			}
 
