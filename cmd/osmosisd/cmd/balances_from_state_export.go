@@ -321,12 +321,12 @@ Example:
 			config.SetRoot(clientCtx.HomeDir)
 
 			balancesFile := args[0]
-			byteValue, err := ioutil.ReadFile(balancesFile)
-			if err != nil {
-				// if error is not nil
-				// print error
-				panic(err)
-			}
+			//byteValue, err := ioutil.ReadFile(balancesFile)
+			// if err != nil {
+			// 	// if error is not nil
+			// 	// print error
+			// 	panic(err)
+			// }
 
 			//snapshotOutput := args[1]
 
@@ -337,7 +337,17 @@ Example:
 
 			// decoding country1 struct
 			// from json format
-			err = json.Unmarshal(byteValue, &derivedAccount)
+			// 2. Read the JSON file into the struct array
+			sourceFile, err := os.Open(balancesFile)
+			if err != nil {
+				return err
+			}
+			// remember to close the file at the end of the function
+			defer sourceFile.Close()
+
+			if err := json.NewDecoder(sourceFile).Decode(&derivedAccount); err != nil {
+				return err
+			}
 
 			if err != nil {
 				// if error is not nil
