@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -323,9 +324,9 @@ Example:
 			balancesFile := args[0]
 			byteValue, _ := ioutil.ReadFile(balancesFile)
 
-			//snapshotOutput := args[1]
+			snapshotOutput := args[1]
 
-			var derivedAccount DerivedAccount
+			var derivedAccount []DerivedAccount
 
 			// data in JSON format which
 			// is to be decoded
@@ -338,6 +339,33 @@ Example:
 				// if error is not nil
 				// print error
 				fmt.Println(err)
+			}
+
+			// 3. Create a new file to store CSV data
+			outputFile, err := os.Create(snapshotOutput)
+			if err != nil {
+				return err
+			}
+			defer outputFile.Close()
+
+			// 4. Write the header of the CSV file and the successive rows by iterating through the JSON struct array
+			writer := csv.NewWriter(outputFile)
+			defer writer.Flush()
+
+			header := []string{"address", "staked"}
+			if err := writer.Write(header); err != nil {
+				return err
+			}
+
+			for _, r := range derivedAccount {
+				var csvRow []string
+				if r.Staked.IsZero() {
+					continue
+				}
+				csvRow = append(csvRow, r.Address, r.Staked.String())
+				if err := writer.Write(csvRow); err != nil {
+					return err
+				}
 			}
 
 			return nil
