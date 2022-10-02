@@ -374,6 +374,9 @@ Example:
 
 			for _, r := range deriveSnapshot.Accounts {
 				var csvRow []string
+				if r.Staked.IsZero() {
+					continue
+				}
 				csvRow = append(csvRow, r.Address, r.Staked.String())
 				if err := writer.Write(csvRow); err != nil {
 					return err
