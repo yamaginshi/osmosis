@@ -25,6 +25,7 @@ import (
 )
 
 const FlagSelectPoolIds = "breakdown-by-pool-ids"
+const FlagMinimumStakeAmount = "minimum-stake-amount"
 
 type DeriveSnapshot struct {
 	NumberAccounts uint64                    `json:"num_accounts"`
@@ -322,23 +323,14 @@ Example:
 			config.SetRoot(clientCtx.HomeDir)
 
 			balancesFile := args[0]
-			//byteValue, err := ioutil.ReadFile(balancesFile)
-			// if err != nil {
-			// 	// if error is not nil
-			// 	// print error
-			// 	panic(err)
-			// }
 
 			snapshotOutput := args[1]
 
+			minStakeAmount, _ := cmd.Flags().GetInt64(FlagMinimumStakeAmount)
+
 			var deriveSnapshot DeriveSnapshot
 
-			// data in JSON format which
-			// is to be decoded
-
-			// decoding country1 struct
-			// from json format
-			// 2. Read the JSON file into the struct array
+			// read the balances json file into the struct array
 			sourceFile, err := os.Open(balancesFile)
 			if err != nil {
 				return err
@@ -350,20 +342,14 @@ Example:
 				return err
 			}
 
-			if err != nil {
-				// if error is not nil
-				// print error
-				panic(err)
-			}
-
-			// 3. Create a new file to store CSV data
+			// create a new file to store CSV data
 			outputFile, err := os.Create(snapshotOutput)
 			if err != nil {
 				return err
 			}
 			defer outputFile.Close()
 
-			// 4. Write the header of the CSV file and the successive rows by iterating through the JSON struct array
+			// write the header of the CSV file and the successive rows by iterating through the JSON struct array
 			writer := csv.NewWriter(outputFile)
 			defer writer.Flush()
 
@@ -372,14 +358,14 @@ Example:
 				return err
 			}
 
+			// iterate through all accounts, leave out accounts that dont meet the criteria
 			for _, r := range deriveSnapshot.Accounts {
 				var csvRow []string
-				if r.Staked.IsZero() {
-					continue
-				}
-				csvRow = append(csvRow, r.Address, r.Staked.String())
-				if err := writer.Write(csvRow); err != nil {
-					return err
+				if r.Staked.GT(sdk.NewInt(minStakeAmount)) {
+					csvRow = append(csvRow, r.Address, r.Staked.String())
+					if err := writer.Write(csvRow); err != nil {
+						return err
+					}
 				}
 			}
 
@@ -387,8 +373,7 @@ Example:
 		},
 	}
 
-	cmd.Flags().String(FlagSelectPoolIds, "",
-		"Output a special breakdown for amount LP'd to the provided pools. Usage --breakdown-by-pool-ids=1,2,605")
+	cmd.Flags().Int64(FlagMinimumStakeAmount, 0, "Specify minimum amount (non inclusive) accounts must stake to be included in airdrop (default: 0)")
 
 	return cmd
 }
