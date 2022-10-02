@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -305,13 +304,6 @@ Example:
 	return cmd
 }
 
-type StakedAmountToAddress struct {
-	// 1. Create a new struct for storing read JSON objects
-	Address string                 `json:"address"`
-	Staked  uint64                 `json:"staked"`
-	Other   map[string]interface{} `json:"-"`
-}
-
 // BalancesToCSVCmd generates a airdrop.csv from a provided exported balances.json.
 func StakedToCSVCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -329,64 +321,25 @@ Example:
 			config.SetRoot(clientCtx.HomeDir)
 
 			balancesFile := args[0]
+			byteValue, _ := ioutil.ReadFile(balancesFile)
 
-			snapshotOutput := args[1]
+			//snapshotOutput := args[1]
 
-			// 2. Read the JSON file into the struct array
-			sourceFile, err := os.Open(balancesFile)
+			var derivedAccount DerivedAccount
+
+			// data in JSON format which
+			// is to be decoded
+
+			// decoding country1 struct
+			// from json format
+			err := json.Unmarshal(byteValue, &derivedAccount)
+
 			if err != nil {
-				return err
-			}
-			// remember to close the file at the end of the function
-			defer sourceFile.Close()
-
-			var accounts []DerivedAccount
-
-			// var airdropList []StakedAmountToAddress
-			jsonBlob, _ := ioutil.ReadFile(balancesFile)
-
-			//var airdropList []StakedAmountToAddress
-			err = json.Unmarshal(jsonBlob, &accounts)
-			if err != nil {
-				panic(err)
-			}
-			// if err := json.Unmarshal(jsonBlob, &airdropList); err != nil {
-			// 	panic(err)
-			// }
-
-			// if err := json.Unmarshal(jsonBlob, &airdropList); err != nil {
-			// 	return err
-			// }
-			var x2 []DerivedAccount
-			for _, v := range accounts {
-				if v.Staked.IsPositive() {
-					x2 = append(x2, v)
-				}
+				// if error is not nil
+				// print error
+				fmt.Println(err)
 			}
 
-			// 3. Create a new file to store CSV data
-			outputFile, err := os.Create(snapshotOutput)
-			if err != nil {
-				return err
-			}
-			defer outputFile.Close()
-
-			// 4. Write the header of the CSV file and the successive rows by iterating through the JSON struct array
-			writer := csv.NewWriter(outputFile)
-			defer writer.Flush()
-
-			header := []string{"address", "staked"}
-			if err := writer.Write(header); err != nil {
-				return err
-			}
-
-			for _, r := range x2 {
-				var csvRow []string
-				csvRow = append(csvRow, r.Address, fmt.Sprint(r.Staked))
-				if err := writer.Write(csvRow); err != nil {
-					return err
-				}
-			}
 			return nil
 		},
 	}
