@@ -355,6 +355,8 @@ Example:
 				panic(err)
 			}
 
+			fmt.Printf("%v", derivedAccount.Address)
+
 			return nil
 		},
 	}
