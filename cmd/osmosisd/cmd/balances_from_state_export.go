@@ -355,9 +355,6 @@ Example:
 				panic(err)
 			}
 
-			err = fmt.Errorf("%v", derivedAccount.Address)
-			panic(err)
-
 			return nil
 		},
 	}
