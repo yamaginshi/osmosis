@@ -325,7 +325,7 @@ Example:
 
 			//snapshotOutput := args[1]
 
-			var derivedAccount []DerivedAccount
+			var derivedAccount DerivedAccount
 
 			// data in JSON format which
 			// is to be decoded
