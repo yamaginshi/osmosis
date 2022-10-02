@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -328,7 +329,7 @@ Example:
 			// 	panic(err)
 			// }
 
-			//snapshotOutput := args[1]
+			snapshotOutput := args[1]
 
 			var deriveSnapshot DeriveSnapshot
 
@@ -353,6 +354,30 @@ Example:
 				// if error is not nil
 				// print error
 				panic(err)
+			}
+
+			// 3. Create a new file to store CSV data
+			outputFile, err := os.Create(snapshotOutput)
+			if err != nil {
+				return err
+			}
+			defer outputFile.Close()
+
+			// 4. Write the header of the CSV file and the successive rows by iterating through the JSON struct array
+			writer := csv.NewWriter(outputFile)
+			defer writer.Flush()
+
+			header := []string{"address", "staked"}
+			if err := writer.Write(header); err != nil {
+				return err
+			}
+
+			for _, r := range deriveSnapshot.Accounts {
+				var csvRow []string
+				csvRow = append(csvRow, r.Address, r.Staked.String())
+				if err := writer.Write(csvRow); err != nil {
+					return err
+				}
 			}
 
 			return nil
