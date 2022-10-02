@@ -72,7 +72,7 @@ import (
 	"github.com/osmosis-labs/osmosis/v12/x/txfees"
 	txfeeskeeper "github.com/osmosis-labs/osmosis/v12/x/txfees/keeper"
 	txfeestypes "github.com/osmosis-labs/osmosis/v12/x/txfees/types"
-	validatorpreferencekeeper "github.com/osmosis-labs/osmosis/v12/x/validator-preference/keeper"
+	validatorpreference "github.com/osmosis-labs/osmosis/v12/x/validator-preference"
 	validatorpreferencetypes "github.com/osmosis-labs/osmosis/v12/x/validator-preference/types"
 )
 
@@ -113,7 +113,7 @@ type AppKeepers struct {
 	GovKeeper                 *govkeeper.Keeper
 	WasmKeeper                *wasm.Keeper
 	TokenFactoryKeeper        *tokenfactorykeeper.Keeper
-	ValidatorPreferenceKeeper *validatorpreferencekeeper.Keeper
+	ValidatorPreferenceKeeper *validatorpreference.Keeper
 	// IBC modules
 	// transfer module
 	TransferModule transfer.AppModule
@@ -324,7 +324,7 @@ func (appKeepers *AppKeepers) InitNormalKeepers(
 	)
 	appKeepers.TokenFactoryKeeper = &tokenFactoryKeeper
 
-	validatorPreferenceKeeper := validatorpreferencekeeper.NewKeeper(
+	validatorPreferenceKeeper := validatorpreference.NewKeeper(
 		appKeepers.keys[validatorpreferencetypes.StoreKey],
 		appKeepers.GetSubspace(validatorpreferencetypes.ModuleName),
 		appKeepers.StakingKeeper,

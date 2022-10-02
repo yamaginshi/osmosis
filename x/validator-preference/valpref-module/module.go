@@ -7,8 +7,8 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/osmosis-labs/osmosis/v11/x/gamm/keeper"
-	"github.com/osmosis-labs/osmosis/v11/x/superfluid/types"
+	"github.com/osmosis-labs/osmosis/v12/x/gamm/keeper"
+	"github.com/osmosis-labs/osmosis/v12/x/superfluid/types"
 	"github.com/spf13/cobra"
 	abci "github.com/tendermint/tendermint/abci/types"
 

@@ -11,7 +11,6 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgSetValidatorSetPreference{}, "", nil)
 	cdc.RegisterConcrete(&MsgDelegateToValidatorSet{}, "", nil)
 	cdc.RegisterConcrete(&MsgUndelegateFromValidatorSet{}, "", nil)
-	// this line is used by starport scaffolding # 2
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {

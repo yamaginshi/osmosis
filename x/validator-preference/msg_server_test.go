@@ -2,7 +2,7 @@ package keeper_test
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/osmosis-labs/osmosis/v12/x/validator-preference/keeper"
+	valPref "github.com/osmosis-labs/osmosis/v12/x/validator-preference"
 	"github.com/osmosis-labs/osmosis/v12/x/validator-preference/types"
 )
 
@@ -108,7 +108,7 @@ func (suite *KeeperTestSuite) TestSetValidatorSetPreference() {
 		suite.Run(test.name, func() {
 
 			// setup message server
-			msgServer := keeper.NewMsgServerImpl(suite.App.ValidatorPreferenceKeeper)
+			msgServer := valPref.NewMsgServerImpl(suite.App.ValidatorPreferenceKeeper)
 			c := sdk.WrapSDKContext(suite.Ctx)
 
 			// call the create validator set preference

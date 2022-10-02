@@ -2,6 +2,8 @@ package keeper
 
 import (
 	"context"
+	"fmt"
+	"reflect"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/osmosis-labs/osmosis/v12/x/validator-preference/types"
@@ -27,9 +29,15 @@ func (server msgServer) SetValidatorSetPreference(goCtx context.Context, msg *ty
 	preferences := msg.Preferences
 
 	// check if a user already have a validator-set created
-	existingValidator, found := server.keeper.GetValidatorSetPreference(ctx, msg.Delegator)
+	existingValidators, found := server.keeper.GetValidatorSetPreference(ctx, msg.Delegator)
+	fmt.Println(existingValidators)
 	if found {
-		preferences = existingValidator.Preferences
+		// check if the new preferences is the same as the existing preferences
+		if reflect.DeepEqual(preferences, existingValidators.Preferences) {
+			return nil, fmt.Errorf("The preferences are the same")
+		}
+
+		preferences = existingValidators.Preferences
 	}
 
 	// check if the distribution weights equals 1

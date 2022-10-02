@@ -9,7 +9,7 @@ import (
 )
 
 // ValidateValidator checks if the validator address is valid and the validator provided exists onchain.
-func (k Keeper) ValidateValidator(ctx sdk.Context, valOperAddress string) (sdk.ValAddress, stakingtypes.Validator, error) {
+func (k Keeper) GetValAddrAndVal(ctx sdk.Context, valOperAddress string) (sdk.ValAddress, stakingtypes.Validator, error) {
 	valAddr, err := sdk.ValAddressFromBech32(valOperAddress)
 	if err != nil {
 		return nil, stakingtypes.Validator{}, fmt.Errorf("validator address not formatted")
@@ -28,7 +28,7 @@ func (k Keeper) ValidatePreferences(ctx sdk.Context, preferences []types.Validat
 	total_weight := sdk.NewDec(0)
 	for _, val := range preferences {
 		// validation to check that the validator given is valid
-		_, _, err := k.ValidateValidator(ctx, val.ValOperAddress)
+		_, _, err := k.GetValAddrAndVal(ctx, val.ValOperAddress)
 		if err != nil {
 			return err
 		}
