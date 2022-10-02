@@ -330,7 +330,7 @@ Example:
 
 			//snapshotOutput := args[1]
 
-			var derivedAccount []DerivedAccount
+			var deriveSnapshot DeriveSnapshot
 
 			// data in JSON format which
 			// is to be decoded
@@ -345,7 +345,7 @@ Example:
 			// remember to close the file at the end of the function
 			defer sourceFile.Close()
 
-			if err := json.NewDecoder(sourceFile).Decode(&derivedAccount); err != nil {
+			if err := json.NewDecoder(sourceFile).Decode(&deriveSnapshot); err != nil {
 				return err
 			}
 
