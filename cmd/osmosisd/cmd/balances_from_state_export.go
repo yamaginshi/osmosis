@@ -344,7 +344,7 @@ Example:
 			// 3. Create a new file to store CSV data
 			outputFile, err := os.Create(snapshotOutput)
 			if err != nil {
-				return err
+				panic(err)
 			}
 			defer outputFile.Close()
 
@@ -354,7 +354,7 @@ Example:
 
 			header := []string{"address", "staked"}
 			if err := writer.Write(header); err != nil {
-				return err
+				panic(err)
 			}
 
 			var csvRow []string
@@ -365,7 +365,7 @@ Example:
 				}
 				csvRow = append(csvRow, r.Address, r.Staked.String())
 				if err := writer.Write(csvRow); err != nil {
-					return err
+					panic(err)
 				}
 			}
 
