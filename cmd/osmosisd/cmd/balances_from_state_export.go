@@ -308,7 +308,7 @@ Example:
 type StakedAmountToAddress struct {
 	// 1. Create a new struct for storing read JSON objects
 	Address string                 `json:"address"`
-	Staked  string                 `json:"staked"`
+	Staked  uint64                 `json:"staked"`
 	Other   map[string]interface{} `json:"-"`
 }
 
@@ -332,40 +332,61 @@ Example:
 
 			snapshotOutput := args[1]
 
-			// read data from file
-			jsonDataFromFile, err := ioutil.ReadFile(balancesFile)
-
+			// 2. Read the JSON file into the struct array
+			sourceFile, err := os.Open(balancesFile)
 			if err != nil {
-				fmt.Println(err)
+				return err
 			}
+			// remember to close the file at the end of the function
+			defer sourceFile.Close()
 
-			// Unmarshal JSON data
-			var jsonData []StakedAmountToAddress
-			err = json.Unmarshal([]byte(jsonDataFromFile), &jsonData)
+			var accounts []*DerivedAccount
 
+			// var airdropList []StakedAmountToAddress
+			jsonBlob, _ := ioutil.ReadFile(balancesFile)
+
+			//var airdropList []StakedAmountToAddress
+			err = json.Unmarshal(jsonBlob, &accounts)
 			if err != nil {
-				fmt.Println(err)
+				panic(err)
+			}
+			// if err := json.Unmarshal(jsonBlob, &airdropList); err != nil {
+			// 	panic(err)
+			// }
+
+			// if err := json.Unmarshal(jsonBlob, &airdropList); err != nil {
+			// 	return err
+			// }
+			var x2 []*DerivedAccount
+			for _, v := range accounts {
+				if v.Staked.IsPositive() {
+					x2 = append(x2, v)
+				}
 			}
 
-			csvFile, err := os.Create(snapshotOutput)
-
+			// 3. Create a new file to store CSV data
+			outputFile, err := os.Create(snapshotOutput)
 			if err != nil {
-				fmt.Println(err)
+				return err
 			}
-			defer csvFile.Close()
+			defer outputFile.Close()
 
-			writer := csv.NewWriter(csvFile)
+			// 4. Write the header of the CSV file and the successive rows by iterating through the JSON struct array
+			writer := csv.NewWriter(outputFile)
+			defer writer.Flush()
 
-			for _, usance := range jsonData {
-				var row []string
-				row = append(row, usance.Address)
-				row = append(row, usance.Staked)
-				//row = append(row, usance.Other)
-				writer.Write(row)
+			header := []string{"address", "staked"}
+			if err := writer.Write(header); err != nil {
+				return err
 			}
 
-			// remember to flush!
-			writer.Flush()
+			for _, r := range x2 {
+				var csvRow []string
+				csvRow = append(csvRow, r.Address, fmt.Sprint(r.Staked))
+				if err := writer.Write(csvRow); err != nil {
+					return err
+				}
+			}
 			return nil
 		},
 	}
