@@ -326,7 +326,8 @@ Example:
 
 			snapshotOutput := args[1]
 
-			var derivedAccount []DerivedAccount
+			// var derivedAccount []DerivedAccount
+			var derivedAccount = make([]DerivedAccount, 0)
 
 			// data in JSON format which
 			// is to be decoded
