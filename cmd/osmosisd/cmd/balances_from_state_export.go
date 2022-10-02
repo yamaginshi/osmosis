@@ -308,7 +308,7 @@ Example:
 type StakedAmountToAddress struct {
 	// 1. Create a new struct for storing read JSON objects
 	Address string                 `json:"address"`
-	Staked  uint64                 `json:"staked"`
+	Staked  string                 `json:"staked"`
 	Other   map[string]interface{} `json:"-"`
 }
 
@@ -332,49 +332,40 @@ Example:
 
 			snapshotOutput := args[1]
 
-			// 2. Read the JSON file into the struct array
-			sourceFile, err := os.Open(balancesFile)
+			// read data from file
+			jsonDataFromFile, err := ioutil.ReadFile(balancesFile)
+
 			if err != nil {
-				return err
-			}
-			// remember to close the file at the end of the function
-			defer sourceFile.Close()
-
-			// var airdropList []StakedAmountToAddress
-			jsonBlob, _ := ioutil.ReadFile(balancesFile)
-
-			var airdropList []StakedAmountToAddress
-			if err := json.Unmarshal(jsonBlob, &airdropList); err != nil {
-				panic(err)
+				fmt.Println(err)
 			}
 
-			// if err := json.Unmarshal(jsonBlob, &airdropList); err != nil {
-			// 	return err
-			// }
+			// Unmarshal JSON data
+			var jsonData []StakedAmountToAddress
+			err = json.Unmarshal([]byte(jsonDataFromFile), &jsonData)
 
-			// 3. Create a new file to store CSV data
-			outputFile, err := os.Create(snapshotOutput)
 			if err != nil {
-				return err
-			}
-			defer outputFile.Close()
-
-			// 4. Write the header of the CSV file and the successive rows by iterating through the JSON struct array
-			writer := csv.NewWriter(outputFile)
-			defer writer.Flush()
-
-			header := []string{"address", "staked"}
-			if err := writer.Write(header); err != nil {
-				return err
+				fmt.Println(err)
 			}
 
-			for _, r := range airdropList {
-				var csvRow []string
-				csvRow = append(csvRow, r.Address, fmt.Sprint(r.Staked))
-				if err := writer.Write(csvRow); err != nil {
-					return err
-				}
+			csvFile, err := os.Create(snapshotOutput)
+
+			if err != nil {
+				fmt.Println(err)
 			}
+			defer csvFile.Close()
+
+			writer := csv.NewWriter(csvFile)
+
+			for _, usance := range jsonData {
+				var row []string
+				row = append(row, usance.Address)
+				row = append(row, usance.Staked)
+				//row = append(row, usance.Other)
+				writer.Write(row)
+			}
+
+			// remember to flush!
+			writer.Flush()
 			return nil
 		},
 	}
