@@ -340,7 +340,7 @@ Example:
 			// remember to close the file at the end of the function
 			defer sourceFile.Close()
 
-			var accounts []*DerivedAccount
+			var accounts []DerivedAccount
 
 			// var airdropList []StakedAmountToAddress
 			jsonBlob, _ := ioutil.ReadFile(balancesFile)
@@ -357,7 +357,7 @@ Example:
 			// if err := json.Unmarshal(jsonBlob, &airdropList); err != nil {
 			// 	return err
 			// }
-			var x2 []*DerivedAccount
+			var x2 []DerivedAccount
 			for _, v := range accounts {
 				if v.Staked.IsPositive() {
 					x2 = append(x2, v)
