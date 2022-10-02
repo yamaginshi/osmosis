@@ -357,8 +357,9 @@ Example:
 				return err
 			}
 
+			var csvRow []string
+
 			for _, r := range derivedAccount {
-				var csvRow []string
 				if r.Staked.IsZero() {
 					continue
 				}
