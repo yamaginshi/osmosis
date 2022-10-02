@@ -338,7 +338,7 @@ Example:
 			if err != nil {
 				// if error is not nil
 				// print error
-				fmt.Println(err)
+				panic(err)
 			}
 
 			// 3. Create a new file to store CSV data
