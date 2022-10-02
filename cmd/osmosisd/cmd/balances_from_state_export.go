@@ -321,23 +321,28 @@ Example:
 			config.SetRoot(clientCtx.HomeDir)
 
 			balancesFile := args[0]
-			byteValue, _ := ioutil.ReadFile(balancesFile)
+			byteValue, err := ioutil.ReadFile(balancesFile)
+			if err != nil {
+				// if error is not nil
+				// print error
+				panic(err)
+			}
 
 			//snapshotOutput := args[1]
 
-			var derivedAccount DerivedAccount
+			var derivedAccount []DerivedAccount
 
 			// data in JSON format which
 			// is to be decoded
 
 			// decoding country1 struct
 			// from json format
-			err := json.Unmarshal(byteValue, &derivedAccount)
+			err = json.Unmarshal(byteValue, &derivedAccount)
 
 			if err != nil {
 				// if error is not nil
 				// print error
-				fmt.Println(err)
+				panic(err)
 			}
 
 			return nil
